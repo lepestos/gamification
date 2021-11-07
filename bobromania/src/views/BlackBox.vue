@@ -1,11 +1,13 @@
 <template>
-  <div class="BlackBox">
+  <div class="black-box">
     <black-box-input :class="{transparent: this.active_half() === 'bottom'}"/>
     <hr>
     <black-box-output :class="{transparent: this.active_half() === 'top'}"/>
     <transition appear name="fade">
       <black-box-recalculate v-if="this.active_half() === 'bottom'"/>
     </transition>
+    <hr>
+    <black-box-table/>
   </div>
 </template>
 
@@ -13,6 +15,7 @@
 import blackBoxInput from "../components/black-box-input.vue"
 import blackBoxOutput from "../components/black-box-output.vue"
 import blackBoxRecalculate from "../components/black-box-recalculate.vue"
+import blackBoxTable from "../components/black-box-table.vue"
 import {mapGetters} from 'vuex'
 export default {
   name: "BlackBox.vue",
@@ -20,6 +23,7 @@ export default {
     blackBoxInput,
     blackBoxOutput,
     blackBoxRecalculate,
+    blackBoxTable
   },
   methods: mapGetters(['active_half'])
 }
@@ -34,14 +38,8 @@ export default {
   opacity: 0;
 }
 
-section:last-of-type {
-  margin-bottom: $section-margin*2;
-}
-
 hr {
-  height: 3px;
-  background-color: $main-green;
-  margin-top: $section-margin;
+  @extend %standard-hr;
 }
 
 .transparent {

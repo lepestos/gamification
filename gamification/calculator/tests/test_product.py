@@ -20,6 +20,7 @@ class ProductTest(APITestCase):
         p = Product.objects.all()[0]
         self.assertEqual(p.name, 'bicycle')
         self.assertEqual(p.price, 1000)
+        Product.objects.all().delete()
 
     def test_delete(self):
         data = {
@@ -46,3 +47,19 @@ class ProductTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()['name'], 'product2')
         self.assertEqual(response.json()['price'], 902)
+
+    def test_list(self):
+        response = self.client.post(reverse('product-list'), data={
+            'name': 'product2',
+            'price': 902
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(reverse('product-list'), data={
+            'name': 'mock',
+            'price': 902
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get(reverse('product-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data), 1)

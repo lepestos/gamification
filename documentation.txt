@@ -14,32 +14,38 @@ base_url: "localhost:8000/api/v1"
     DELETE: удалить продукт
 
 /black-box
-    GET: отобразить коробку
+    GET: отобразить список коробок
     POST: добавить коробку
         body: {
             "name": String,
-            "products": [id_1, id_2, id_3],
-            "amounts": [am_1, am_2, am_3]
+            "price": Decimal,
+            "lot_cost": {"cheap": Decimal, "middle": Decimal, "costly": Decimal},
+            "lot_amount": {"cheap": int, "middle": int, "costly": int}}
         }
 
 /black-box/:id
     GET: отобразить коробку
-    PUT/PATCH: изменить коробку
+    response: {
+            "name": String,
+            "price": Decimal,
+            "loyalty": Decimal,
+            "rentability": Decimal,
+            "max_count_costly": Integer,
+            "lot_cost": {"cheap": Decimal, "middle": Decimal, "costly": Decimal},
+            "lot_amount": {"cheap": int, "middle": int, "costly": int}},
+            "id": int
+        }
+    PUT: изменить коробку
         body: {
             "name": String,
-            "products": [id_1, id_2, id_3],
-            "probabilities": [prob_1, prob_2, prob_3]
+            "price": Decimal,
+            "lot_cost": {"cheap": Decimal, "middle": Decimal, "costly": Decimal},
+            "lot_amount": {"cheap": int, "middle": int, "costly": int}}
         }
     DELETE: удалить коробку
 
 /black-box/calculate
     POST: расчитать оптимальную модель коробки
-        body: {
-            "prices": [pr_1, pr_2, pr_3], // pr_1 - самый дорогой
-            "max_count_costly": Integer,
-            "profit": Decimal, // десятичная дробь, не проценты!
-            "loyalty": Decimal // десятичная дробь, не проценты!
-        }
         body: {
             lot_cost: {"cheap": float, "middle": float, "costly": float},
             loyalty: float, // десятичная дробь, не проценты!
@@ -48,7 +54,7 @@ base_url: "localhost:8000/api/v1"
             black_box_cost: float
         }
         response: {
-            probabilities: {"cheap": float, "middle": float, "costly": float},
+            probabilities: {"cheap": Decimal, "middle": Decimal, "costly": Decimal},
             amounts: {"cheap": int, "middle": int, "costly": int},
             black_box_cost: {"min": float, "cur": float, "max": float}
         }
@@ -56,8 +62,21 @@ base_url: "localhost:8000/api/v1"
 /black-box/:id/mock_open
     POST: провести n открытий коробки (база данных не изменяется)
         body: {
-            "n": Integer
+            "n": Integer // количество открытий
         }
         response: {
-            "product_names": [name_1, name_2, ... , name_n]
+            "product_categories": [cat_1, cat_2, ... , cat_n] // cat_i is one of the following: "costly", "middle", "cheap"
+        }
+
+/black-box/mock_open_unsaved
+    POST: провести n открытий коробки, заданной некоторыми хорактеристиками
+        body: {
+            "name": String,
+            "price": Decimal,
+            "lot_cost": {"cheap": Decimal, "middle": Decimal, "costly": Decimal},
+            "lot_amount": {"cheap": int, "middle": int, "costly": int}},
+            "n": Integer // количество открытий
+        }
+        response: {
+            "product_categories": [cat_1, cat_2, ... , cat_n] // cat_i is one of the following: "costly", "middle", "cheap"
         }

@@ -40,3 +40,9 @@
     box-shadow: inset -1px -1px 3px $main-black;
   }
 }
+
+%standard-hr {
+  height: 3px;
+  background-color: $main-green;
+  margin-top: $section-margin;
+}

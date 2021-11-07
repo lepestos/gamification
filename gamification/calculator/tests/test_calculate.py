@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 
-class CalculateTest(APITestCase):
+class CalculateTestBlackBox(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -20,12 +20,14 @@ class CalculateTest(APITestCase):
         cls.data2['black_box_cost'] = 400
         cls.data3 = deepcopy(cls.data)
         cls.data3['black_box_cost'] = 100
+        cls.data4 = deepcopy(cls.data)
+        cls.data4['lot_cost']['costly'] = 305
 
     def test_calculate(self):
         response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data, format='json')
         exp_amounts = {'costly': 100, 'middle': 171, 'cheap': 181}
         exp_probabilities = {'costly': 0.222, 'middle': 0.378, 'cheap': 0.4}
-        exp_cur, exp_max, exp_min = 460, 768, 264
+        exp_cur, exp_max, exp_min = 460, 760, 270
         self.assert_response_is_correct(response,  exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min)
         self.assertEqual(response.data['message'], '')
 
@@ -37,7 +39,7 @@ class CalculateTest(APITestCase):
             'middle': 0.439,
             'cheap': 0.4
         }
-        exp_cur, exp_max, exp_min = 400, 768, 264
+        exp_cur, exp_max, exp_min = 400, 760, 270
         self.assert_response_is_correct(response, exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min)
         self.assertEqual(response.data['message'], '')
 
@@ -45,9 +47,17 @@ class CalculateTest(APITestCase):
         response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data3, format='json')
         exp_amounts = {'costly': 100, 'middle': 171, 'cheap': 181}
         exp_probabilities = {'costly': 0.222, 'middle': 0.378, 'cheap': 0.4}
-        exp_cur, exp_max, exp_min = 460, 768, 264
+        exp_cur, exp_max, exp_min = 460, 760, 270
         self.assert_response_is_correct(response,  exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min)
-        self.assertEqual(response.data['message'], f'Цена должна лежать в интервале от 270 до 760.')
+        self.assertEqual(response.data['message'],
+                         f'С новыми значениями констант цена должна лежать '
+                         f'в интервале от 270 до 760, поэтому она была перерасчитана.')
+
+    def test_calculate_with_close_costly_and_middle_prices(self):
+        response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data4, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'],
+                         'Цены дорогого и среднего лотов отличаются на слишком маленькую величину.')
 
     def assert_response_is_correct(self, response, exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -57,3 +67,35 @@ class CalculateTest(APITestCase):
         self.assertEqual(response.data['black_box_cost']['cur'], exp_cur)
         self.assertEqual(response.data['black_box_cost']['max'], exp_max)
         self.assertEqual(response.data['black_box_cost']['min'], exp_min)
+
+
+class CalculateTestLottery(APITestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.data = {
+            "lots": [
+            {"amount": 1, "price": 1000},
+            {"amount": 2, "price": 500},
+            {"amount": 3, "price": 200}
+            ],
+            "write_off": 1000,
+            "referral_coeff": 4,
+            "ticket_amount": 0,
+            "ticket_price": 0
+        }
+        cls.data2 = deepcopy(cls.data)
+        cls.data2['ticket_amount'] = 30
+        cls.data2['ticket_price'] = 130
+
+    def test_calculate(self):
+        response = self.client.post(reverse('lottery-list') + 'calculate/', data=self.data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('write_off', data)
+        self.assertIn('ticket_amount', data)
+        self.assertIn('total_cost', data)
+        self.assertIn('ticket_price', data)
+        self.assertIn('min_profit', data)
+        self.assertIn('min_rentability', data)
+        self.assertIn('max_rentability', data)

@@ -15,8 +15,8 @@
     </div>
     <div class="black-box-output__black-box-cost black-box-cost">
       <h2>Рассчитанная стоимость Black Box</h2>
-        <input type="text" v-model="this.output_data().black_box_cost.cur" readonly><span>бобров</span>
-        <input type="text" readonly><span>рублей</span>
+        <input type="number" :value="this.output_data().black_box_cost.cur" readonly><span>бобров</span>
+        <input type="number" :value="this.output_data().black_box_cost.cur * this.course().bobr_to_rub" readonly><span>рублей</span>
     </div>
   </section>
 </template>
@@ -26,7 +26,7 @@ import {mapGetters} from "vuex";
 
 export default {
   name: "black-box-output.vue",
-  methods: mapGetters(['output_data'])
+  methods: mapGetters(['output_data', 'course'])
 }
 </script>
 
