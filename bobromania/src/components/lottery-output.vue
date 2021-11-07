@@ -6,33 +6,33 @@
           <h2>Параметры лотереи</h2>
           <div>
             <span>Количество билетов:</span>
-            <input type="number">
+            <input type="number" v-model="this.lottery_output_data().ticket_amount" readonly>
           </div>
           <div>
-            <span>Стоимость лотереи:</span>
-            <input type="number">
+            <span>Себестоимость лотереи:</span>
+            <input type="number" v-model="this.lottery_output_data().total_cost" readonly>
           </div>
         </div>
         <div class="lottery-output__profit">
           <h2>Выгода от лотереи</h2>
           <span>От:</span>
-          <input type="number">
+          <input type="number" v-model="this.lottery_output_data().min_profit" readonly>
           <span>До:</span>
-          <input type="number">
+          <input type="number" v-model="this.lottery_output_data().write_off" readonly>
         </div>
       </div>
       <div class="lottery-output__right">
         <div class="lottery-output__ticket-cost">
           <h2>Стоимость билета</h2>
-          <div><input type="number" readonly><span>бобров</span></div>
-          <div><input type="number" readonly><span>рублей</span></div>
+          <div><input type="number" v-model="this.lottery_output_data().ticket_price" readonly><span>бобров</span></div>
+          <div><input type="number" :value="this.lottery_output_data().ticket_price * this.course().bobr_to_rub" readonly><span>рублей</span></div>
         </div>
         <div class="lottery-output__rentability">
           <h2>Рентабильность</h2>
           <span>От:</span>
-          <input type="number">
+          <input type="number" v-model="this.lottery_output_data().min_rentability" readonly>
           <span>До:</span>
-          <input type="number">
+          <input type="number" v-model="this.lottery_output_data().max_rentability" readonly>
         </div>
       </div>
     </div>
@@ -40,8 +40,13 @@
 </template>
 
 <script>
+import {mapGetters} from "vuex";
+
 export default {
-  name: "lottery-output"
+  name: "lottery-output",
+  methods: {
+    ...mapGetters(['lottery_output_data', 'course'])
+  }
 }
 </script>
 
