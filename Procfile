@@ -1,1 +1,1 @@
-web: gunicorn gamification.gamification.wsgi --log-file -
+web: gunicorn gamification.wsgi --log-file -
