@@ -34,14 +34,19 @@ class BlackBoxUtil:
                 'success': False
             }
         else:
+            lot_amount = convert_to_dict(self.amounts)
+            lot_cost = convert_to_dict(self.prices)
+            cur_bb_cost = self.get_rounded_price()
             data = {
                 'probabilities': convert_to_dict(self.probabilities),
-                'amounts': convert_to_dict(self.amounts),
+                'amounts': lot_amount,
                 'black_box_cost': {
-                    'cur': self.get_rounded_price(),
+                    'cur': cur_bb_cost,
                     'max': max_p,
                     'min': min_p
                 },
+                'loyalty': get_loyalty(lot_amount),
+                'rentability': get_rentability(lot_amount, lot_cost, cur_bb_cost),
                 'message': self.message,
                 'success': True
             }

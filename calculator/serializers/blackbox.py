@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from calculator.models import BlackBox, Product
+from calculator.models.blackbox import BlackBox
+from calculator.models.product import Product
 
 
 class LotAmountSerializer(serializers.Serializer):
@@ -37,9 +38,17 @@ class ProductIdsSerializer(serializers.Serializer):
 
 
 class BlackBoxSerializer(serializers.ModelSerializer):
-    lot_amount = LotAmountSerializer(help_text='{costly: int, middle: int, cheap: int}')
-    lot_cost = LotCostSerializer(required=False, help_text='{costly: decimal, middle: decimal, cheap: decimal}')
-    product_ids = ProductIdsSerializer(required=False, help_text='{costly: int, middle: int, cheap: int}')
+    lot_amount = LotAmountSerializer(
+        help_text='{costly: int, middle: int, cheap: int}'
+    )
+    lot_cost = LotCostSerializer(
+        required=False,
+        help_text='{costly: decimal, middle: decimal, cheap: decimal}'
+    )
+    product_ids = ProductIdsSerializer(
+        required=False,
+        help_text='{costly: int, middle: int, cheap: int}'
+    )
 
     class Meta:
         model = BlackBox
@@ -53,7 +62,8 @@ class BlackBoxSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if ('lot_cost' in attrs) == ('product_ids' in attrs):
             raise serializers.ValidationError(
-                'Должно присутствовать ровно одно из двух полей: либо product_ids, либо lot_cost'
+                'Должно присутствовать ровно одно из двух полей: '
+                'либо product_ids, либо lot_cost'
             )
         return attrs
 
@@ -75,10 +85,14 @@ class MockOpenSerializer(serializers.Serializer):
 
 
 class MockOpenUnsavedSerializer(serializers.ModelSerializer):
-    lot_cost = LotCostSerializer(help_text='{costly: decimal, middle: decimal, cheap: decimal}')
-    lot_amount = LotAmountSerializer(help_text='{costly: int, middle: int, cheap: int}')
+    lot_cost = LotCostSerializer(
+        help_text='{costly: decimal, middle: decimal, cheap: decimal}'
+    )
+    lot_amount = LotAmountSerializer(
+        help_text='{costly: int, middle: int, cheap: int}'
+    )
     n = serializers.IntegerField(min_value=1, help_text='Количество открытий')
 
     class Meta:
         model = BlackBox
-        fields = ('name', 'price', 'lot_cost', 'lot_amount', 'n')
+        fields = ('name', 'price', 'lot_cost', 'lot_amount', 'n',)

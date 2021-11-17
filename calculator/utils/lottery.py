@@ -5,7 +5,7 @@ from typing import List, Dict
 class LotteryUtil:
     def __init__(self, lots: List[Dict[str, int]], write_off: float,
                  ticket_amount: int, ticket_price: float,
-                 referral_coeff: int=float('inf'), discount: int=0):
+                 referral_coeff, discount):
         self.message = ''
         self.success = True
         self.validate(lots, write_off, referral_coeff, discount, ticket_amount, ticket_price)
@@ -14,7 +14,7 @@ class LotteryUtil:
         self.lot_amounts = [lot['amount'] for lot in lots]
         self.lot_prices = [lot['price'] for lot in lots]
         self.write_off = write_off
-        self.referral_coeff = referral_coeff
+        self.set_referral_coeff(referral_coeff)
         self.discount = discount
         self.total_cost = self.get_total_cost()
         self.set_ticket_amount(ticket_amount, ticket_price)
@@ -29,16 +29,20 @@ class LotteryUtil:
                 'success': False,
                 'message': self.message
             }
+        min_p = self.get_cur_min_ticket_price()
+        max_p = self.get_cur_max_ticket_price()
+        min_a = self.get_cur_min_ticket_amount()
+        max_a = self.get_cur_max_ticket_amount()
         data = {
             'write_off': self.write_off,
-            'ticket_amount': self.ticket_amount,
+            'ticket_amount': {'cur': self.ticket_amount, 'min': min_a, 'max': max_a},
             'total_cost': self.total_cost,
-            'ticket_price': self.ticket_price,
+            'ticket_price': {'cur': self.ticket_price, 'min': min_p, 'max': max_p},
             'min_profit': round(self.min_profit),
             'min_rentability': round(self.min_rentability, 2),
             'max_rentability': round(self.max_rentability, 2),
             'success': self.success,
-            'message': self.message
+            'message': self.message,
         }
         return data
 
@@ -75,10 +79,6 @@ class LotteryUtil:
             self.message = 'Error: ticket_price < 0'
             self.success = False
             return
-        if 0 < ticket_amount < sum(lot['amount'] for lot in lots):
-            self.message = "Error: ticket_amount can't be less than total amount of lots"
-            self.success = False
-            return
         if (ticket_price == 0) is not (ticket_amount == 0):
             self.message = "Error: ticket_amount and ticket_price must be " \
                            "either both zero or both non-zero"
@@ -103,6 +103,12 @@ class LotteryUtil:
         else:
             self.ticket_price = ticket_price
             self.write_off = self.get_write_off()
+
+    def set_referral_coeff(self, referral_coeff):
+        if referral_coeff == 0:
+            self.referral_coeff = float('inf')
+        else:
+            self.referral_coeff = referral_coeff
 
     def get_ticket_amount(self):
         return 4 * sum(self.lot_amounts)
@@ -130,7 +136,21 @@ class LotteryUtil:
         return self.ticket_amount * self.ticket_price - self.total_cost
 
     def get_min_ticket_amount(self, price):
-        return ceil(self.total_cost / price)
+        return max(ceil(self.total_cost / price), sum(self.lot_amounts))
+
+    def get_cur_min_ticket_amount(self):
+        return max(ceil(self.total_cost / self.ticket_price), sum(self.lot_amounts))
+
+    def get_cur_max_ticket_amount(self):
+        min_ta = self.get_cur_min_ticket_amount()
+        return 3 * self.ticket_amount - 2 * min_ta + 10
+
+    def get_cur_min_ticket_price(self):
+        return self.round_up(self.total_cost / self.ticket_amount)
+
+    def get_cur_max_ticket_price(self):
+        min_tp = self.get_cur_min_ticket_price()
+        return 3 * self.ticket_price - 2 * min_tp + 50
 
     @staticmethod
     def round_up(price):

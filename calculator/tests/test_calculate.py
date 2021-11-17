@@ -22,6 +22,9 @@ class CalculateTestBlackBox(APITestCase):
         cls.data3['black_box_cost'] = 100
         cls.data4 = deepcopy(cls.data)
         cls.data4['lot_cost']['costly'] = 305
+        cls.data5 = deepcopy(cls.data)
+        cls.data5['costly_amount'] = 1
+        cls.data5['loyalty'] = 0.7
 
     def test_calculate(self):
         response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data, format='json')
@@ -59,6 +62,13 @@ class CalculateTestBlackBox(APITestCase):
         self.assertEqual(response.data['message'],
                          'Цены дорогого и среднего лотов отличаются на слишком маленькую величину.')
 
+    def test_response_contains_loyalty_and_rentability(self):
+        response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data5, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data.get('loyalty'), 0.6)
+        self.assertEqual(data.get('rentability'), 0.42)
+
     def assert_response_is_correct(self, response, exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['amounts'], exp_amounts)
@@ -82,7 +92,8 @@ class CalculateTestLottery(APITestCase):
             "write_off": 1000,
             "referral_coeff": 4,
             "ticket_amount": 0,
-            "ticket_price": 0
+            "ticket_price": 0,
+            "discount": 0.05,
         }
         cls.data2 = deepcopy(cls.data)
         cls.data2['ticket_amount'] = 30

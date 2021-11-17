@@ -1,16 +1,19 @@
-from rest_framework import viewsets, status
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from calculator.utils.blackbox import BlackBoxUtil
-from calculator.models import BlackBox
+from calculator.models.blackbox import BlackBox
 from calculator.serializers.blackbox import BlackBoxSerializer,\
     CalculateSerializer, MockOpenSerializer, MockOpenUnsavedSerializer
+from .mixins import CalculateViewSet
 
 
-class BlackBoxViewSet(viewsets.ModelViewSet):
+class BlackBoxViewSet(CalculateViewSet):
     serializer_class = BlackBoxSerializer
     queryset = BlackBox.objects.all()
+    model_class = BlackBox
+    util_class = BlackBoxUtil
 
     def get_serializer_class(self):
         if self.action == 'calculate':
@@ -20,29 +23,6 @@ class BlackBoxViewSet(viewsets.ModelViewSet):
         if self.action == 'mock_open_unsaved':
             return MockOpenUnsavedSerializer
         return super().get_serializer_class()
-
-    def perform_create(self, serializer):
-        box = BlackBox.from_json(serializer.data)
-        box.save()
-
-    def perform_update(self, serializer):
-        instance = serializer.instance
-        data = serializer.validated_data
-        box = BlackBox.from_json(data, instance=instance)
-        box.save()
-
-    @action(detail=False, methods=['post'])
-    def calculate(self, request):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            box = BlackBoxUtil(**serializer.data)
-            data = box.to_json()
-            if data['success']:
-                return Response(data)
-            else:
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'])
     def mock_open(self, request, pk):

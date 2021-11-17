@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from calculator.models import Product
+from calculator.models.product import Product
 
 
 class ProductTest(APITestCase):
