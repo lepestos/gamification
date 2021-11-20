@@ -28,9 +28,9 @@ class LotteryTest(unittest.TestCase):
     def test_initial(self):
         exp_response = {
             'write_off': 1000,
-            'ticket_amount': {'cur': 24, 'min': 18, 'max': 46},
+            'ticket_amount': {'cur': 24, 'min': 18, 'max': 136},
             'total_cost': 2600,
-            'ticket_price': {'cur': 150.0, 'min': 110, 'max': 280},
+            'ticket_price': {'cur': 150, 'min': 10, 'max': 530},
             'min_profit': 250,
             'min_rentability': 0.1,
             'max_rentability': 0.38,
@@ -46,9 +46,9 @@ class LotteryTest(unittest.TestCase):
         data['ticket_price'] = 130
         exp_response = {
             'write_off': 1300,
-            'ticket_amount': {'cur': 30, 'min': 20, 'max': 60},
+            'ticket_amount': {'cur': 30, 'min': 20, 'max': 150},
             'total_cost': 2600,
-            'ticket_price': {'cur': 130, 'min': 90, 'max': 260},
+            'ticket_price': {'cur': 130, 'min': 10, 'max': 470},
             'min_profit': 364,
             'min_rentability': 0.14,
             'max_rentability': 0.5,
@@ -64,9 +64,9 @@ class LotteryTest(unittest.TestCase):
         data['ticket_price'] = 150
         exp_response = {
             'write_off': 1000,
-            'ticket_amount': {'cur': 24, 'min': 18, 'max': 46},
+            'ticket_amount': {'cur': 24, 'min': 18, 'max': 136},
             'total_cost': 2600,
-            'ticket_price': {'cur': 150.0, 'min': 110, 'max': 280},
+            'ticket_price': {'cur': 150, 'min': 10, 'max': 530},
             'min_profit': 250,
             'min_rentability': 0.1,
             'max_rentability': 0.38,
@@ -156,4 +156,17 @@ class LotteryTest(unittest.TestCase):
         r = lottery.to_json()
         self.assertTrue(r['success'])
         self.assertEqual(r['min_rentability'], r['max_rentability'])
+        self.assertEqual(r['write_off'], r['min_profit'])
+
+    def test_no_referral_programme_write_off_and_min_profit_are_equal(self):
+        data = {
+            'lots': [{'amount': 100, 'price': 1000}],
+            'write_off': 150000,
+            'referral_coeff': 0,
+            'discount': 0,
+            'ticket_amount': 0,
+            'ticket_price': 0,
+        }
+        lottery = LotteryUtil(**data)
+        r = lottery.to_json()
         self.assertEqual(r['write_off'], r['min_profit'])

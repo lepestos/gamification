@@ -5,7 +5,7 @@ from calculator.models.lottery import Lottery
 
 class LotSerializer(serializers.Serializer):
     amount = serializers.IntegerField(min_value=1)
-    price = serializers.DecimalField(min_value=0, max_digits=12, decimal_places=2)
+    price = serializers.DecimalField(min_value=0, max_digits=7, decimal_places=2)
 
 
 class LotterySerializer(serializers.ModelSerializer):

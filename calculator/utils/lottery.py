@@ -20,6 +20,7 @@ class LotteryUtil:
         self.set_ticket_amount(ticket_amount, ticket_price)
         self.set_ticket_price(ticket_price)
         self.min_profit = self.get_min_profit()
+        self.write_off = self.get_write_off()
         self.min_rentability = self.get_min_rentability()
         self.max_rentability = self.get_max_rentability()
 
@@ -91,7 +92,8 @@ class LotteryUtil:
         else:
             min_amount = self.get_min_ticket_amount(ticket_price)
             if ticket_amount < min_amount:
-                self.ticket_amount = self.get_ticket_amount()
+                print('here')
+                self.ticket_amount = max(self.get_ticket_amount(), min_amount)
                 self.message = f'Для заданной цены количество билетов должно быть ' \
                                f'не меньше {min_amount}, поэтому оно было перерасчитано.'
             else:
@@ -143,14 +145,15 @@ class LotteryUtil:
 
     def get_cur_max_ticket_amount(self):
         min_ta = self.get_cur_min_ticket_amount()
-        return 3 * self.ticket_amount - 2 * min_ta + 10
+        return 3 * self.ticket_amount - 2 * min_ta + 100
 
     def get_cur_min_ticket_price(self):
-        return self.round_up(self.total_cost / self.ticket_amount)
+        # return self.round_up(self.total_cost / self.ticket_amount)
+        return 10
 
     def get_cur_max_ticket_price(self):
         min_tp = self.get_cur_min_ticket_price()
-        return 3 * self.ticket_price - 2 * min_tp + 50
+        return 3 * self.ticket_price - 2 * min_tp + 100
 
     @staticmethod
     def round_up(price):

@@ -23,6 +23,7 @@ class BlackBoxUtil:
         self.set_price(black_box_cost)
         self.probabilities = self.get_probabilities()
         self.amounts = self.get_amounts()
+        self.update_probabilities()
 
     def to_json(self):
         max_p = self.get_rounded_max_price()
@@ -36,17 +37,20 @@ class BlackBoxUtil:
         else:
             lot_amount = convert_to_dict(self.amounts)
             lot_cost = convert_to_dict(self.prices)
-            cur_bb_cost = self.get_rounded_price()
+            loyalty = get_loyalty(lot_amount)
+            rentability = get_rentability(lot_amount, lot_cost, self.ticket_price)
+            if rentability > 1:
+                rentability = 1
             data = {
                 'probabilities': convert_to_dict(self.probabilities),
                 'amounts': lot_amount,
                 'black_box_cost': {
-                    'cur': cur_bb_cost,
+                    'cur': self.ticket_price,
                     'max': max_p,
                     'min': min_p
                 },
-                'loyalty': get_loyalty(lot_amount),
-                'rentability': get_rentability(lot_amount, lot_cost, cur_bb_cost),
+                'loyalty': loyalty,
+                'rentability': rentability,
                 'message': self.message,
                 'success': True
             }
@@ -98,11 +102,14 @@ class BlackBoxUtil:
             return 0, floor(a1 * p2 / p3), a1
         return a1, ceil(a1 * p2 / p1), ceil(a1 * p3 / p1)
 
-    def get_optimal_price(self):
-        return self.geometric_mean(self.min_price, self.max_price)
+    def update_probabilities(self):
+        total_amount = sum(self.amounts)
+        self.probabilities = [round(amount/total_amount, 3) for amount in self.amounts]
 
-    def get_rounded_price(self):
-        return self.round_up(self.ticket_price)
+    def get_optimal_price(self):
+        return self.round_up(
+            self.geometric_mean(self.min_price, self.max_price)
+        )
 
     def get_rounded_max_price(self):
         return self.round_down(self.max_price)

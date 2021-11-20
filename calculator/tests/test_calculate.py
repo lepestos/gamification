@@ -28,30 +28,23 @@ class CalculateTestBlackBox(APITestCase):
 
     def test_calculate(self):
         response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data, format='json')
-        exp_amounts = {'costly': 100, 'middle': 171, 'cheap': 181}
-        exp_probabilities = {'costly': 0.222, 'middle': 0.378, 'cheap': 0.4}
+        exp_amounts = {'cheap': 172, 'costly': 100, 'middle': 158}
         exp_cur, exp_max, exp_min = 460, 760, 270
-        self.assert_response_is_correct(response,  exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min)
+        self.assert_response_is_correct(response,  exp_amounts, exp_cur, exp_max, exp_min)
         self.assertEqual(response.data['message'], '')
 
     def test_calculate_with_given_good_price(self):
         response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data2, format='json')
         exp_amounts = {'costly': 100, 'middle': 271, 'cheap': 248}
-        exp_probabilities = {
-            'costly': 0.162,
-            'middle': 0.439,
-            'cheap': 0.4
-        }
         exp_cur, exp_max, exp_min = 400, 760, 270
-        self.assert_response_is_correct(response, exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min)
+        self.assert_response_is_correct(response, exp_amounts, exp_cur, exp_max, exp_min)
         self.assertEqual(response.data['message'], '')
 
     def test_calculate_with_given_bad_price(self):
         response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data3, format='json')
-        exp_amounts = {'costly': 100, 'middle': 171, 'cheap': 181}
-        exp_probabilities = {'costly': 0.222, 'middle': 0.378, 'cheap': 0.4}
+        exp_amounts = {'cheap': 172, 'costly': 100, 'middle': 158}
         exp_cur, exp_max, exp_min = 460, 760, 270
-        self.assert_response_is_correct(response,  exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min)
+        self.assert_response_is_correct(response,  exp_amounts, exp_cur, exp_max, exp_min)
         self.assertEqual(response.data['message'],
                          f'С новыми значениями констант цена должна лежать '
                          f'в интервале от 270 до 760, поэтому она была перерасчитана.')
@@ -69,11 +62,9 @@ class CalculateTestBlackBox(APITestCase):
         self.assertEqual(data.get('loyalty'), 0.6)
         self.assertEqual(data.get('rentability'), 0.42)
 
-    def assert_response_is_correct(self, response, exp_amounts, exp_probabilities, exp_cur, exp_max, exp_min):
+    def assert_response_is_correct(self, response, exp_amounts, exp_cur, exp_max, exp_min):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['amounts'], exp_amounts)
-        for key in exp_probabilities:
-            self.assertLess(abs(response.data['probabilities'][key] - exp_probabilities[key]), 1e-2)
         self.assertEqual(response.data['black_box_cost']['cur'], exp_cur)
         self.assertEqual(response.data['black_box_cost']['max'], exp_max)
         self.assertEqual(response.data['black_box_cost']['min'], exp_min)
