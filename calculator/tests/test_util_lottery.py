@@ -170,3 +170,18 @@ class LotteryTest(unittest.TestCase):
         lottery = LotteryUtil(**data)
         r = lottery.to_json()
         self.assertEqual(r['write_off'], r['min_profit'])
+
+    def test_send_message_on_too_large_numbers(self):
+        data = {
+            'lots': [{'amount': 1e5, 'price': 1e6}],
+            'write_off': 150000,
+            'referral_coeff': 0,
+            'discount': 0,
+            'ticket_amount': 0,
+            'ticket_price': 0,
+        }
+        lottery = LotteryUtil(**data)
+        r = lottery.to_json()
+        self.assertFalse(r['success'])
+        self.assertEqual(r['message'], 'Слишком большие значения, попробуйте уменьшить входные данные')
+        

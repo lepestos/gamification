@@ -19,6 +19,20 @@ class BlackBoxTest(unittest.TestCase):
                                          f'должна лежать в интервале от 170 до '
                                          f'280, поэтому она была перерасчитана.')
 
+    def test_send_message_on_too_large_numbers(self):
+        data = {
+            "lot_cost": {'costly': 4e11, 'middle': 2e11, 'cheap': 1e11},
+            "costly_amount": 10,
+            "black_box_cost": 3e11,
+            "rentability": 0,
+            "loyalty": 0.6
+        }
+        box = BlackBoxUtil(**data)
+        res = box.to_json()
+        self.assertFalse(res['success'])
+        self.assertEqual(res['message'], 'Слишком большие значения, попробуйте уменьшить входные данные')
+
+
     def model_does_not_change_after_instant_recalculate(self):
         data = {
             'lot_cost': {'costly': 8000, 'middle': 2000, 'cheap': 1000},

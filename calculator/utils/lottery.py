@@ -34,6 +34,11 @@ class LotteryUtil:
         max_p = self.get_cur_max_ticket_price()
         min_a = self.get_cur_min_ticket_amount()
         max_a = self.get_cur_max_ticket_amount()
+        if not self.validate_output_size():
+            return {
+                'message': 'Слишком большие значения, попробуйте уменьшить входные данные',
+                'success': False
+            }
         data = {
             'write_off': self.write_off,
             'ticket_amount': {'cur': self.ticket_amount, 'min': min_a, 'max': max_a},
@@ -46,6 +51,15 @@ class LotteryUtil:
             'message': self.message,
         }
         return data
+
+    def validate_output_size(self):
+        if self.write_off >= 1e10:
+            return False
+        if self.ticket_amount >= 1e10:
+            return False
+        if self.total_cost >= 1e10:
+            return False
+        return True
 
     def validate(self, lots, write_off, referral_coeff,
                  discount, ticket_amount, ticket_price):
@@ -92,7 +106,6 @@ class LotteryUtil:
         else:
             min_amount = self.get_min_ticket_amount(ticket_price)
             if ticket_amount < min_amount:
-                print('here')
                 self.ticket_amount = max(self.get_ticket_amount(), min_amount)
                 self.message = f'Для заданной цены количество билетов должно быть ' \
                                f'не меньше {min_amount}, поэтому оно было перерасчитано.'

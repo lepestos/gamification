@@ -51,7 +51,7 @@ class CalculateTestBlackBox(APITestCase):
 
     def test_calculate_with_close_costly_and_middle_prices(self):
         response = self.client.post(reverse('blackbox-list') + 'calculate/', data=self.data4, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'],
                          'Цены дорогого и среднего лотов отличаются на слишком маленькую величину.')
 

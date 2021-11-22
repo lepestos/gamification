@@ -32,6 +32,11 @@ class BlackBoxUtil:
             data = {
                 'message': 'Цены дорогого и среднего лотов '
                            'отличаются на слишком маленькую величину.',
+                'success': True
+            }
+        elif not self.validate_output_size():
+            data = {
+                'message': 'Слишком большие значения, попробуйте уменьшить входные данные',
                 'success': False
             }
         else:
@@ -55,6 +60,14 @@ class BlackBoxUtil:
                 'success': True
             }
         return data
+
+    def validate_output_size(self):
+        if self.ticket_price >= 1e10:
+            return False
+        for amount in self.amounts:
+            if amount >= 1e10:
+                return False
+        return True
 
     def set_price(self, black_box_cost):
         if black_box_cost == 0:
