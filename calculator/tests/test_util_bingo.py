@@ -5,7 +5,7 @@ import pytest
 from calculator.utils.bingo import BingoUtil, DiscountBingoUtil,\
     BoosterBingoUtil, MiniBingoUtil, BOOSTER_VALUES
 from .data.util_lottery_data import RWEB_DATA, RPS_DATA, SFL_DATA,\
-    INIT_DISCOUNT_DATA, DIC_DATA, INIT_BOOSTER_DATA
+    INIT_DISCOUNT_DATA, DIC_DATA, INIT_BOOSTER_DATA, RECALC_DISCOUNT_DATA
 
 
 class TestBingo:
@@ -32,15 +32,19 @@ class TestBingo:
         res = bingo.solve_amounts_normal_budget()
         assert max(abs(r - e) for r, e in zip(res, exp)) < 1e-2
 
-    @pytest.mark.parametrize("input_data", INIT_DISCOUNT_DATA)
+    @pytest.mark.parametrize("input_data", INIT_DISCOUNT_DATA + RECALC_DISCOUNT_DATA)
     def test_discounts_initial(self, input_data):
         bingo = DiscountBingoUtil(**input_data)
         res = bingo.to_json()
         assert res['expected_budget'] >= 0
         assert all(p >= 0 for p in res['participants_per_lot'])
-        assert isclose(sum(res['budget_distribution']), 1, abs_tol=0.03)
+        assert isclose(sum(res['budget_distribution']), 1)
         assert sum(sum(row) for row in res['amounts']) <= input_data['lucky_participants']
         assert all(all(a >= 0 for a in row) for row in res['amounts'])
+        un_p = input_data['unlucky_participants']
+        if un_p is not None:
+            if res['total_participants'] != 0:
+                assert isclose(1 - un_p, res['lucky_participants'] / res['total_participants'], abs_tol=0.1)
 
     @pytest.mark.parametrize("inp, exp", DIC_DATA)
     def test_discounts_initial_concrete(self, inp, exp):

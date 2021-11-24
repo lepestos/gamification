@@ -16,8 +16,9 @@ class LotterySerializer(serializers.ModelSerializer):
         model = Lottery
         fields = ('name', 'lots', 'write_off', 'referral_coeff', 'ticket_amount',
                   'total_cost', 'ticket_price', 'min_profit',
-                  'min_rentability', 'max_rentability', 'discount', 'truncated_name', 'id',)
-        read_only_fields = ('truncated_name',)
+                  'min_rentability', 'max_rentability', 'discount',
+                  'truncated_name', 'id')
+        read_only_fields = ('truncated_name', 'id')
 
 
 class CalculateSerializer(serializers.Serializer):

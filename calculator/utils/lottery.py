@@ -126,7 +126,7 @@ class LotteryUtil:
             self.referral_coeff = referral_coeff
 
     def get_ticket_amount(self):
-        return 10 * sum(self.lot_amounts)
+        return 4 * sum(self.lot_amounts)
 
     def get_total_cost(self):
         return sum(a * c for a, c in zip(self.lot_amounts, self.lot_prices))

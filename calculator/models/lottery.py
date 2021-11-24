@@ -8,10 +8,10 @@ from calculator.models.product import Product
 
 class Lottery(models.Model):
     name = models.CharField(max_length=127)
-    write_off = models.DecimalField(decimal_places=2, max_digits=7)
+    write_off = models.DecimalField(decimal_places=2, max_digits=12)
     referral_coeff = models.PositiveIntegerField(blank=True, null=True)
-    ticket_price = models.DecimalField(decimal_places=2, max_digits=9)
-    min_profit = models.DecimalField(decimal_places=2, max_digits=7)
+    ticket_price = models.DecimalField(decimal_places=2, max_digits=12)
+    min_profit = models.DecimalField(decimal_places=2, max_digits=12)
     min_rentability = models.DecimalField(decimal_places=2, max_digits=3)
     max_rentability = models.DecimalField(decimal_places=2, max_digits=3)
     total_cost = models.DecimalField(decimal_places=2, max_digits=12)

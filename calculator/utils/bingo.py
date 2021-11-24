@@ -131,20 +131,21 @@ class MiniBingoUtil:
         return spare_budget, spare_amount
 
 
+
 class DiscountBingoUtil(BingoUtil):
     def __init__(self, prices: List[Decimal], discounts: List[Decimal],
                  budget: Decimal, lucky_participants: int,
-                 usage_probability: Decimal, unlucky_participants: int,
+                 usage_probability: Decimal, unlucky_participants: Decimal,
                  budget_distribution: List[Decimal]):
         self.message = ''
         self.success = True
-        self.prices = prices
-        self.discounts = sorted(discounts)
+        self.prices = list(map(float, prices))
+        self.discounts = list(map(float, sorted(discounts)))
         self.n = len(self.prices)
         self.k = len(self.discounts)
-        self.budget = budget
+        self.budget = float(budget)
         self.lucky_participants = lucky_participants
-        self.usage_probability = usage_probability
+        self.usage_probability = float(usage_probability)
         self.set_unlucky_participants(unlucky_participants)
         self.set_budget_distribution(budget_distribution)
         self.abs_budget_distribution = self.get_abs_budget_distribution()
@@ -172,13 +173,13 @@ class DiscountBingoUtil(BingoUtil):
         if unlucky_participants is None:
             self.unlucky_participants = self.get_unlucky_participants()
         else:
-            self.unlucky_participants = unlucky_participants
+            self.unlucky_participants = float(unlucky_participants)
 
     def set_budget_distribution(self, budget_distribution):
         if budget_distribution is None:
             self.budget_distribution = self.get_budget_distribution()
         else:
-            self.budget_distribution = budget_distribution
+            self.budget_distribution = [float(b) for b in budget_distribution]
 
     def get_participants_per_lot(self) -> List[int]:
         nums = [self.lucky_participants * abd for abd in self.abs_budget_distribution]
@@ -203,10 +204,13 @@ class DiscountBingoUtil(BingoUtil):
         return 0
 
     def get_total_participants(self):
-        return self.lucky_participants + self.unlucky_participants
+        return round(self.lucky_participants / (1 - self.unlucky_participants))
 
     def get_budget_distribution(self):
-        return [Decimal(1/self.n)] * self.n
+        bd = [Decimal(1/self.n)] * self.n
+        whole_bd = [a * 100 for a in bd]
+        rounded_whole_bd = BingoUtil.round_preserving_sum(whole_bd)
+        return [round(a / 100, 2) for a in rounded_whole_bd]
 
     def get_abs_budget_distribution(self):
         return self.round_preserving_sum([self.budget * bd for bd in self.budget_distribution])
@@ -214,7 +218,8 @@ class DiscountBingoUtil(BingoUtil):
     def get_expected_budget(self):
         expected_value_matrix = [[a * c * d for a, d in zip(amounts_row, self.discounts)]
                                  for amounts_row, c in zip(self.amounts, self.prices)]
-        return sum(sum(row) for row in expected_value_matrix) * self.usage_probability
+        return round(sum(sum(row) for row in expected_value_matrix) * self.usage_probability)
+
 
     def get_lucky_participants(self):
         return sum(self.participants_per_lot)
