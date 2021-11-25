@@ -1,4 +1,5 @@
 from django.db import models
+from operator import attrgetter
 
 
 class BingoDiscount(models.Model):
@@ -6,7 +7,7 @@ class BingoDiscount(models.Model):
     budget = models.DecimalField(max_digits=12, decimal_places=2)
     expected_budget = models.DecimalField(max_digits=12, decimal_places=2)
     total_participants = models.PositiveIntegerField()
-    unlucky_participants = models.IntegerField()
+    unlucky_participants = models.DecimalField(max_digits=3, decimal_places=2)
     lucky_participants = models.IntegerField()
     usage_probability = models.DecimalField(max_digits=3, decimal_places=2)
 
@@ -27,7 +28,7 @@ class BingoDiscount(models.Model):
             instance = BingoDiscount.objects.create(**data)
         else:
             instance = cls.set_properties(instance, **data)
-            instance.lottery_items.all().delete()
+            instance.bingo_items.all().delete()
 
         cls.set_discount_products(prices, budget_distribution, participants_per_lot,
                                   amounts, discounts, instance)
@@ -36,7 +37,8 @@ class BingoDiscount(models.Model):
 
     @staticmethod
     def get_discounts(discounts):
-        discounts = [Discount.objects.create(value=discount) for discount in discounts]
+        discounts = [Discount.objects.create(value=discount)
+                     for discount in discounts]
         for discount in discounts:
             discount.save()
         return discounts
@@ -69,27 +71,36 @@ class BingoDiscount(models.Model):
         return instance
 
     def budget_distribution(self):
-        return [bingo.lot.budget_in_percents for bingo in self.bingo_items.all()]
+        return [lot.budget_in_percents for lot in self.lots()]
 
     def participants_per_lot(self):
-        return [bingo.lot.participants for bingo in self.bingo_items.all()]
+        return [lot.participants for lot in self.lots()]
 
     def prices(self):
-        return [bingo.lot.price for bingo in self.bingo_items.all()]
+        return [lot.price for lot in self.lots()]
+
+    def set_discounts(self):
+        discounts = {bingo.discount for bingo in self.bingo_items.all()}
+        return sorted(discounts, key=attrgetter('id'))
 
     def discounts(self):
-        return [bingo.discount.value for bingo in self.bingo_items.all()]
+        return [discount.value for discount in self.set_discounts()]
+
+    def lots(self):
+        lots = {bingo.lot for bingo in self.bingo_items.all()}
+        return sorted(lots, key=attrgetter('id'))
 
     def amounts(self):
-        prices = self.prices()
+        lots = self.lots()
+        discounts = self.set_discounts()
         amounts = []
-        amount = []
-        for bingo in self.bingo_items.all():
-            for price in prices:
-                amount = []
-                if bingo.lot.price == price:
-                    amount.append(bingo.amount)
-            amounts.append(amount)
+        for lot in lots:
+            row = []
+            for discount in discounts:
+                bi = self.bingo_items.get(discount=discount, lot=lot)
+                row.append(bi.amount)
+            amounts.append(row)
+        return amounts
 
 
 class Discount(models.Model):
@@ -110,3 +121,6 @@ class Lot(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=12)
     budget_in_percents = models.DecimalField(decimal_places=2, max_digits=3)
     participants = models.IntegerField()
+
+    class Meta:
+        ordering = ('price',)

@@ -5,8 +5,8 @@ from rest_framework.response import Response
 
 class CalculateViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
-        lottery = self.model_class.from_json(serializer.data)
-        lottery.save()
+        instance = self.model_class.from_json(serializer.data)
+        instance.save()
 
     def perform_update(self, serializer):
         instance = serializer.instance

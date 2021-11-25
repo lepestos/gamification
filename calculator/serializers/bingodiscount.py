@@ -10,8 +10,8 @@ class Matrix(serializers.ListField):
 class BingoSerializer(serializers.ModelSerializer):
     prices = serializers.ListField(child=serializers.DecimalField(min_value=0,
                                                                   max_digits=12, decimal_places=2))
-    discounts = serializers.ListField(child=serializers.DecimalField(min_value=0,
-                                                                     max_digits=3, decimal_places=2))
+    discounts = serializers.ListSerializer(child=serializers.DecimalField(min_value=0,
+                                                                  max_digits=3, decimal_places=2))
     budget_distribution = serializers.ListSerializer(child=serializers.DecimalField(max_digits=12,
                                                                                     decimal_places=2))
     participants_per_lot = serializers.ListSerializer(child=serializers.DecimalField(max_digits=12,

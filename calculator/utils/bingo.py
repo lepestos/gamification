@@ -131,7 +131,6 @@ class MiniBingoUtil:
         return spare_budget, spare_amount
 
 
-
 class DiscountBingoUtil(BingoUtil):
     def __init__(self, prices: List[Decimal], discounts: List[Decimal],
                  budget: Decimal, lucky_participants: int,
@@ -220,7 +219,6 @@ class DiscountBingoUtil(BingoUtil):
                                  for amounts_row, c in zip(self.amounts, self.prices)]
         return round(sum(sum(row) for row in expected_value_matrix) * self.usage_probability)
 
-
     def get_lucky_participants(self):
         return sum(self.participants_per_lot)
 
@@ -231,11 +229,11 @@ class BoosterBingoUtil(BingoUtil):
                  abs_budget_distribution: List[Decimal]):
         self.message = ''
         self.success = True
-        self.prices = prices
+        self.prices = list(map(float, prices))
         self.n = len(self.prices)
         self.booster_amount = booster_amount
         self.fix_amount = fix_amount
-        self.budget = budget
+        self.budget = float(budget)
         self.participants = participants
         self.set_abs_budget_distribution(abs_budget_distribution)
         self.participants_per_mission = self.get_participants_per_mission()
@@ -246,7 +244,6 @@ class BoosterBingoUtil(BingoUtil):
         self.participants_per_lot = self.participants_per_mission
         self.amounts = self.get_amounts()
         self.transform_amounts()
-
 
     def to_json(self):
         data = {
@@ -262,7 +259,7 @@ class BoosterBingoUtil(BingoUtil):
         if abs_budget_distribution is None:
             self.abs_budget_distribution = self.get_abs_budget_distribution()
         else:
-            self.abs_budget_distribution = abs_budget_distribution
+            self.abs_budget_distribution = [float(b) for b in abs_budget_distribution]
 
     def get_abs_budget_distribution(self):
         return self.round_preserving_sum([self.budget/self.n] * self.n)
